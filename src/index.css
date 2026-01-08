@@ -16,14 +16,28 @@
   --sky:#cfe7ff;
   --cream:#fff3d6;
 
-  --bg-overlay: rgba(0,0,0,0); /* No overlay in light mode */
+  --bg-overlay: rgba(0,0,0,0);
   --cloud-opacity: 0.55;
+
+  /* ✅ SIZING TOKENS (we’ll shrink these on mobile) */
+  --bw-win: 5px;        /* window border */
+  --bw-bar: 5px;        /* titlebar bottom border */
+  --bw-input: 4px;      /* input border */
+  --bw-box: 5px;        /* dialog/quest borders */
+  --bw-chip: 3px;       /* chip border */
+  --bw-btn: 4px;        /* button border */
+
+  --shadow-win: 8px;
+  --shadow-md: 6px;
+  --shadow-sm: 4px;
+
+  --pad-bg: 14px;
 }
 
 /* --- NIGHT MODE OVERRIDES --- */
 body.dark {
   --ink: #e6e6e6;
-  --paper: rgba(40, 36, 50, 0.95); /* Dark Purple Grey */
+  --paper: rgba(40, 36, 50, 0.95);
 
   --win: rgba(45, 42, 60, 0.92);
   --tile: rgba(255,255,255,0.05);
@@ -31,14 +45,48 @@ body.dark {
   --border: #15151b;
   --shadow: #000000;
 
-  --pink: #6d4c5e; /* Muted Dark Pink */
-  --mint: #385648; /* Muted Dark Green */
-  --sky: #3b4e63;  /* Muted Dark Blue */
-  --cream: #4a4638; /* Muted Dark Yellow */
+  --pink: #6d4c5e;
+  --mint: #385648;
+  --sky: #3b4e63;
+  --cream: #4a4638;
 
-  --bg-overlay: rgba(20, 20, 35, 0.85); /* Darkens the BG image */
-  --cloud-opacity: 0.15; /* Dim the white clouds significantly */
+  --bg-overlay: rgba(20, 20, 35, 0.85);
+  --cloud-opacity: 0.15;
   background-color: #121212;
+}
+
+/* ✅ MOBILE BOX SHRINK (THIS FIXES OUT-OF-BOUNDARY) */
+@media (max-width: 520px){
+  :root{
+    --bw-win: 4px;
+    --bw-bar: 4px;
+    --bw-input: 3px;
+    --bw-box: 4px;
+    --bw-chip: 3px;
+    --bw-btn: 3px;
+
+    --shadow-win: 6px;
+    --shadow-md: 5px;
+    --shadow-sm: 3px;
+
+    --pad-bg: 10px;
+  }
+}
+@media (max-width: 380px){
+  :root{
+    --bw-win: 3px;
+    --bw-bar: 3px;
+    --bw-input: 3px;
+    --bw-box: 3px;
+    --bw-chip: 2px;
+    --bw-btn: 3px;
+
+    --shadow-win: 5px;
+    --shadow-md: 4px;
+    --shadow-sm: 2px;
+
+    --pad-bg: 8px;
+  }
 }
 
 *{ box-sizing:border-box; }
@@ -47,32 +95,27 @@ body{
   font-family:"VT323", system-ui, -apple-system, Segoe UI, Roboto, Arial;
   color:var(--ink);
   transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden; /* ✅ important for mobile */
 }
 
 /* ✅ BACKGROUND */
 .bg{
   min-height:100vh;
-  padding: 14px 14px 40px;
+  padding: var(--pad-bg) var(--pad-bg) 40px;
   background: url("./assets/pixel_bg.png");
   background-size: cover;
   background-position:center;
   background-attachment: fixed;
   position: relative;
-  overflow-x: hidden; /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden;
 }
 
-/* Dark mode tint for background image */
+/* Dark mode tint */
 body.dark .bg::before {
-   /* We use a separate pseudo element for the tint in dark mode if needed, 
-      but here we just reuse the cloud container or add a tint on .bg directly via linear-gradient trick */
    background: linear-gradient(rgba(20,20,35,0.85), rgba(20,20,35,0.85)), url("./assets/pixel_bg.png");
    background-size: cover;
    background-attachment: fixed;
 }
-/* Re-applying background purely for clean switching logic if you use the image tag. 
-   Actually, the easiest way to dim a bg image without extra divs is using box-shadow inset or bg-color blend.
-   Let's use a simple overlay on body.dark .bg */
-
 body.dark .bg {
   box-shadow: inset 0 0 0 100vh var(--bg-overlay);
 }
@@ -86,7 +129,7 @@ body.dark .bg {
   right: -40%;
   height: 220px;
   background-repeat: repeat-x;
-  opacity: var(--cloud-opacity); /* Use variable for night mode */
+  opacity: var(--cloud-opacity);
   pointer-events:none;
   image-rendering: pixelated;
   transition: opacity 0.5s ease;
@@ -148,7 +191,6 @@ body.dark .bg {
   font-size: 18px;
   letter-spacing: 1px;
   text-shadow: 2px 2px 0 rgba(0,0,0,0.12);
-  /* In dark mode, white text shadow looks better or keep dark shadow for depth */
 }
 
 .hudMeta{
@@ -163,9 +205,9 @@ body.dark .bg {
   align-items:center;
   gap: 6px;
   padding: 6px 8px;
-  border: 3px solid var(--border);
+  border: var(--bw-chip) solid var(--border);
   background: var(--paper);
-  box-shadow: 4px 4px 0 rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-sm) var(--shadow-sm) 0 rgba(0,0,0,0.15);
   font-size: 16px;
   color: var(--ink);
 }
@@ -182,18 +224,18 @@ body.dark .bg {
   font-family:"Press Start 2P";
   font-size: 11px;
   padding: 10px 10px;
-  border: 4px solid var(--border);
+  border: var(--bw-btn) solid var(--border);
   background: #fff;
-  color: #1f1f1f; /* Buttons stay light usually for contrast, or adapt */
+  color: #1f1f1f;
   cursor:pointer;
-  box-shadow: 6px 6px 0 var(--shadow);
+  box-shadow: var(--shadow-md) var(--shadow-md) 0 var(--shadow);
   transform: translate(0,0);
 }
 body.dark .pxBtn {
-  background: #cfcfcf; /* Slightly dimmed white for buttons in dark mode */
+  background: #cfcfcf;
 }
-.pxBtn:hover{ transform: translate(-1px,-1px); box-shadow: 7px 7px 0 var(--shadow); }
-.pxBtn:active{ transform: translate(2px,2px); box-shadow: 4px 4px 0 var(--shadow); }
+.pxBtn:hover{ transform: translate(-1px,-1px); box-shadow: calc(var(--shadow-md) + 1px) calc(var(--shadow-md) + 1px) 0 var(--shadow); }
+.pxBtn:active{ transform: translate(2px,2px); box-shadow: var(--shadow-sm) var(--shadow-sm) 0 var(--shadow); }
 .pxBtn:disabled{ opacity:0.55; cursor:not-allowed; }
 
 .pxBtn.ghost{ background: rgba(255,255,255,0.70); }
@@ -218,12 +260,13 @@ body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
 /* Pixel Window */
 .pxWin{
   background: var(--win);
-  border: 5px solid var(--border);
+  border: var(--bw-win) solid var(--border);
   box-shadow:
-    8px 8px 0 var(--shadow),
+    var(--shadow-win) var(--shadow-win) 0 var(--shadow),
     0 0 0 4px rgba(255,255,255,0.05) inset;
   position: relative;
   color: var(--ink);
+  max-width: 100%;
 }
 
 .pxWin::after{
@@ -243,7 +286,7 @@ body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
   justify-content: space-between;
   align-items:center;
   padding: 10px 10px;
-  border-bottom: 5px solid var(--border);
+  border-bottom: var(--bw-bar) solid var(--border);
   background: linear-gradient(90deg, var(--pink), var(--mint), var(--sky));
 }
 .pxBarLeft{
@@ -256,7 +299,7 @@ body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
   height: 24px;
   display:grid;
   place-items:center;
-  border: 4px solid var(--border);
+  border: var(--bw-btn) solid var(--border);
   background: #fff;
   color: #1f1f1f;
   font-family:"Press Start 2P";
@@ -265,7 +308,7 @@ body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
 .pxTitle{
   font-family:"Press Start 2P";
   font-size: 12px;
-  color: #1f1f1f; /* Keep title dark even in dark mode for contrast on pastel bar */
+  color: #1f1f1f;
 }
 .pxBarRight{ display:flex; gap: 8px; align-items:center; }
 .miniHint{ font-size: 14px; opacity: 0.85; color: #1f1f1f; }
@@ -275,29 +318,31 @@ body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
   z-index: 1;
   padding: 12px;
 }
+@media (max-width: 520px){
+  .pxBody{ padding: 10px; }
+}
 
 /* Modal */
 .backdrop{
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.45);
-  display:flex; /* Changed from grid to flex for better overflow handling */
+  display:flex;
   align-items: center;
   justify-content: center;
   padding: 14px;
   z-index: 999;
 }
 
-/* ✅ SCROLLABLE MODAL FIX */
 .modalWin{
   width: min(980px, 100%);
-  max-height: 85vh; /* Don't be taller than screen */
-  overflow-y: auto; /* Scroll if content is too big */
+  max-height: 85vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
 
-/* ✅ Keep BOX sizes */
+/* Keep BOX sizes */
 .charScreen{
   display:flex;
   flex-direction: column;
@@ -308,11 +353,11 @@ body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
 .charFrame{
   width: 160px;
   height: 160px;
-  border: 5px solid var(--border);
+  border: var(--bw-box) solid var(--border);
   background:
     linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.2)),
     repeating-linear-gradient(90deg, rgba(0,0,0,0.06) 0 8px, rgba(0,0,0,0) 8px 16px);
-  box-shadow: 6px 6px 0 var(--shadow);
+  box-shadow: var(--shadow-md) var(--shadow-md) 0 var(--shadow);
   display:grid;
   place-items:center;
 }
@@ -347,10 +392,10 @@ body.dark .charFrame {
   font-family:"Press Start 2P";
   font-size: 12px;
   padding: 6px 8px;
-  border: 4px solid var(--border);
+  border: var(--bw-btn) solid var(--border);
   background: #fff;
   color: #1f1f1f;
-  box-shadow: 4px 4px 0 var(--shadow);
+  box-shadow: var(--shadow-sm) var(--shadow-sm) 0 var(--shadow);
 }
 
 /* Layout columns */
@@ -361,8 +406,8 @@ body.dark .charFrame {
   align-items:start;
 }
 @media (max-width: 900px){
-  .introGrid{ grid-template-columns: 1fr; justify-items: center; } /* Center char on mobile */
-  .introGrid > div { width: 100%; } /* Text takes full width */
+  .introGrid{ grid-template-columns: 1fr; justify-items: center; }
+  .introGrid > div { width: 100%; }
 }
 
 .leftGrid{
@@ -395,24 +440,30 @@ body.dark .charFrame {
 .pxInput{
   width: 100%;
   padding: 10px 10px;
-  border: 4px solid var(--border);
+  border: var(--bw-input) solid var(--border);
   background: #fff;
   color: #1f1f1f;
   font-family:"VT323";
   font-size: 18px;
   outline: none;
-  box-shadow: 4px 4px 0 var(--shadow);
+  box-shadow: var(--shadow-sm) var(--shadow-sm) 0 var(--shadow);
   border-radius: 0;
 }
 body.dark .pxInput {
-  background: #e0e0e0; /* Input stays light-ish for readability, but slightly dim */
+  background: #e0e0e0;
+}
+@media (max-width: 520px){
+  .pxInput{ padding: 9px 9px; font-size: 17px; }
+}
+@media (max-width: 380px){
+  .pxInput{ padding: 8px 8px; font-size: 16px; }
 }
 
 .dialog{
   margin-top: 10px;
-  border: 5px solid var(--border);
+  border: var(--bw-box) solid var(--border);
   background: #fff;
-  box-shadow: 6px 6px 0 var(--shadow);
+  box-shadow: var(--shadow-md) var(--shadow-md) 0 var(--shadow);
 }
 body.dark .dialog { background: var(--paper); }
 
@@ -420,9 +471,9 @@ body.dark .dialog { background: var(--paper); }
   font-family:"Press Start 2P";
   font-size: 11px;
   padding: 8px 10px;
-  border-bottom: 5px solid var(--border);
+  border-bottom: var(--bw-box) solid var(--border);
   background: var(--cream);
-  color: #1f1f1f; /* Keep name text dark for contrast on cream */
+  color: #1f1f1f;
 }
 
 .dialogText{
@@ -440,7 +491,7 @@ body.dark .dialog { background: var(--paper); }
 .tag{
   display:inline-block;
   padding: 2px 6px;
-  border: 3px solid var(--border);
+  border: var(--bw-chip) solid var(--border);
   background: rgba(255,214,232,0.7);
   font-family:"Press Start 2P";
   font-size: 10px;
@@ -454,9 +505,9 @@ body.dark .dialog { background: var(--paper); }
   gap: 10px;
 }
 .quest{
-  border: 5px solid var(--border);
+  border: var(--bw-box) solid var(--border);
   background: rgba(255,255,255,0.92);
-  box-shadow: 6px 6px 0 var(--shadow);
+  box-shadow: var(--shadow-md) var(--shadow-md) 0 var(--shadow);
   padding: 10px;
   font-size: 18px;
   color: #1f1f1f;
@@ -471,7 +522,7 @@ body.dark .quest {
   color: #1f1f1f;
 }
 body.dark .quest.warn {
-  background: #6e644a; /* Darker yellow/brown warning */
+  background: #6e644a;
   color: #fff;
 }
 
@@ -501,9 +552,9 @@ body.dark .quest.warn {
   gap: 10px;
 }
 .questRow{
-  border: 5px solid var(--border);
+  border: var(--bw-box) solid var(--border);
   background: rgba(255,255,255,0.92);
-  box-shadow: 6px 6px 0 var(--shadow);
+  box-shadow: var(--shadow-md) var(--shadow-md) 0 var(--shadow);
   padding: 10px;
   display:flex;
   justify-content: space-between;
@@ -526,7 +577,7 @@ body.dark .questRow {
   margin-top: 6px;
 }
 
-/* Status Colors - slight transparency for overlay effect */
+/* Status Colors */
 .questRow.now{ background: rgba(255,214,232,0.90); }
 body.dark .questRow.now { background: #6d4c5e; color: #fff; }
 

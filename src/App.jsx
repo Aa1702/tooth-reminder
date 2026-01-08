@@ -40,11 +40,14 @@ const prettyIn = (mins) => {
 };
 
 function safeNotify(title, body) {
-  if (!("Notification" in window)) return;
-  if (Notification.permission !== "granted") return;
+  if (!("Notification" in window)) return false;
+  if (Notification.permission !== "granted") return false;
   try {
     new Notification(title, { body });
-  } catch {}
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 const defaultPlan = {
@@ -58,7 +61,7 @@ const defaultPlan = {
   lastStreakDate: null,
   lastNotifiedAtMinute: null,
   introSeen: false,
-  darkMode: false // Persist dark mode preference
+  darkMode: false
 };
 
 function loadState() {
@@ -93,11 +96,8 @@ export default function App() {
 
   // ✅ Night Mode Logic
   useEffect(() => {
-    if (plan.darkMode) {
-      document.body.classList.add("dark");
-    } else {
-      document.body.classList.remove("dark");
-    }
+    if (plan.darkMode) document.body.classList.add("dark");
+    else document.body.classList.remove("dark");
   }, [plan.darkMode]);
 
   useEffect(() => {
@@ -118,12 +118,38 @@ export default function App() {
     setPlan(p => ({ ...p, darkMode: !p.darkMode }));
   }
 
-  function requestNotifications() {
-    if (!("Notification" in window)) return;
-    Notification.requestPermission().then(() => {
-      setToast("NOTIFS: OK ✅");
-      setTimeout(() => setToast(""), 1200);
-    });
+  // ✅ FIX: make button ALWAYS respond with a toast message (no silent fail)
+  async function requestNotifications() {
+    // Must be called from a click (you already do)
+    if (!("Notification" in window)) {
+      setToast("NOTIFS: UNSUPPORTED ❌");
+      setTimeout(() => setToast(""), 1800);
+      return;
+    }
+
+    // If user already denied, Safari won't re-prompt
+    if (Notification.permission === "denied") {
+      setToast("NOTIFS: DENIED ⚠️ (enable in Safari settings)");
+      setTimeout(() => setToast(""), 2500);
+      return;
+    }
+
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm === "granted") {
+        setToast("NOTIFS: ON ✅");
+        // quick test notification (only works where allowed)
+        safeNotify(`${plan.characterName} 🦷`, "Notifications enabled!");
+      } else if (perm === "denied") {
+        setToast("NOTIFS: DENIED ⚠️");
+      } else {
+        setToast("NOTIFS: LATER ⏳");
+      }
+      setTimeout(() => setToast(""), 2000);
+    } catch {
+      setToast("NOTIFS: FAILED ❌");
+      setTimeout(() => setToast(""), 1800);
+    }
   }
 
   function bumpStreak() {
@@ -248,8 +274,15 @@ export default function App() {
     const stamp = `${todayISO()}_${clock}`;
     if (plan.lastNotifiedAtMinute === stamp) return;
 
-    safeNotify(`${plan.characterName} 🦷`, `${due.title} TIME! TAP DONE ✅`);
+    const ok = safeNotify(`${plan.characterName} 🦷`, `${due.title} TIME! TAP DONE ✅`);
+    // even if notify fails, we still stamp to avoid spam loops
     setPlan((p) => ({ ...p, lastNotifiedAtMinute: stamp }));
+    if (!ok && Notification.permission !== "granted") {
+      // optional: tiny nudge only if user hasn’t enabled
+      // (no UI changes, just a toast)
+      setToast("Reminder ready (turn on notifs 🔔)");
+      setTimeout(() => setToast(""), 1600);
+    }
   }, [clock, schedule]);
 
   function badge(mins) {
@@ -304,16 +337,23 @@ export default function App() {
           <div className="hudMeta">
             <span className="chip">🕒 {clock}</span>
             <span className="chip">🔥 STREAK {plan.streak}</span>
-            <span className="chip">🔔 {notifStatus === 'granted' ? 'ON' : 'OFF'}</span>
+            <span className="chip">🔔 {notifStatus === "granted" ? "ON" : notifStatus === "unsupported" ? "NOPE" : "OFF"}</span>
           </div>
         </div>
+
         <div className="hudRight">
           <button className="pxBtn" onClick={toggleDarkMode}>
             {plan.darkMode ? "☀ DAY" : "🌙 NIGHT"}
           </button>
-          <button className="pxBtn" onClick={requestNotifications} disabled={notifStatus === "granted"}>
+
+          <button
+            className="pxBtn"
+            onClick={requestNotifications}
+            disabled={notifStatus === "granted"}
+          >
             {notifStatus === "granted" ? "NOTIFS OK" : "ENABLE NOTIFS"}
           </button>
+
           <button className="pxBtn ghost" onClick={resetAll}>
             RESET
           </button>
@@ -386,7 +426,6 @@ export default function App() {
 
       {/* MAIN LAYOUT */}
       <main className="layout">
-        {/* LEFT: Character + chat */}
         <PixelWindow
           title="TOOFI SCREEN"
           icon="☺"
@@ -410,6 +449,7 @@ export default function App() {
                     onChange={(e) => setPlan((p) => ({ ...p, friendName: e.target.value }))}
                   />
                 </div>
+
                 <div className="field">
                   <div className="label">MASCOT NAME</div>
                   <input
@@ -440,7 +480,6 @@ export default function App() {
           </div>
         </PixelWindow>
 
-        {/* RIGHT: Schedule controls */}
         <PixelWindow title="SCHEDULE SETTINGS" icon="⚙" right={<span className="miniHint">EDIT TIMES</span>}>
           <div className="settingsGrid">
             <div className="setting">
@@ -459,6 +498,7 @@ export default function App() {
                 }
               />
             </div>
+
             <div className="setting">
               <div className="label">Start</div>
               <input
@@ -487,6 +527,7 @@ export default function App() {
                 }
               />
             </div>
+
             <div className="setting">
               <div className="label">Start</div>
               <input
@@ -514,6 +555,7 @@ export default function App() {
                 }
               />
             </div>
+
             <div className="setting">
               <div className="label">Salt rinse 2</div>
               <input
@@ -582,7 +624,6 @@ export default function App() {
           </div>
         </PixelWindow>
 
-        {/* Bottom: Quest log */}
         <PixelWindow title="QUEST LOG: NEXT UP" icon="➤" className="span2">
           <div className="questLog">
             {schedule.slice(0, 10).map((it) => {

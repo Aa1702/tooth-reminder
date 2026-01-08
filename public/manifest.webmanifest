@@ -1,10 +1,10 @@
 {
-  "name": "Tooth Time — Toofi",
+  "name": "Tooth Time",
   "short_name": "Tooth Time",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FFF3D6",
-  "theme_color": "#CFE7FF",
+  "background_color": "#fff3d6",
+  "theme_color": "#ffd6e8",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
