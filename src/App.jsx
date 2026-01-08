@@ -57,7 +57,8 @@ const defaultPlan = {
   streak: 0,
   lastStreakDate: null,
   lastNotifiedAtMinute: null,
-  introSeen: false
+  introSeen: false,
+  darkMode: false // Persist dark mode preference
 };
 
 function loadState() {
@@ -88,9 +89,16 @@ export default function App() {
   const [clock, setClock] = useState(nowHHMM());
   const [toast, setToast] = useState("");
   const [plan, setPlan] = useState(() => loadState() ?? defaultPlan);
-
-  // Intro flow: 1 welcome, 2 checklist, 0 closed
   const [introStep, setIntroStep] = useState(() => (plan.introSeen ? 0 : 1));
+
+  // ✅ Night Mode Logic
+  useEffect(() => {
+    if (plan.darkMode) {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.remove("dark");
+    }
+  }, [plan.darkMode]);
 
   useEffect(() => {
     const id = setInterval(() => setClock(nowHHMM()), 15000);
@@ -105,6 +113,10 @@ export default function App() {
     if (!("Notification" in window)) return "unsupported";
     return Notification.permission;
   }, [clock]);
+
+  function toggleDarkMode() {
+    setPlan(p => ({ ...p, darkMode: !p.darkMode }));
+  }
 
   function requestNotifications() {
     if (!("Notification" in window)) return;
@@ -229,7 +241,6 @@ export default function App() {
     []
   );
 
-  // 🔔 Notification trigger (this is in App.jsx, not CSS)
   useEffect(() => {
     const due = schedule.find((x) => x.mins === 0);
     if (!due) return;
@@ -293,12 +304,15 @@ export default function App() {
           <div className="hudMeta">
             <span className="chip">🕒 {clock}</span>
             <span className="chip">🔥 STREAK {plan.streak}</span>
-            <span className="chip">🔔 {notifStatus}</span>
+            <span className="chip">🔔 {notifStatus === 'granted' ? 'ON' : 'OFF'}</span>
           </div>
         </div>
         <div className="hudRight">
+          <button className="pxBtn" onClick={toggleDarkMode}>
+            {plan.darkMode ? "☀ DAY" : "🌙 NIGHT"}
+          </button>
           <button className="pxBtn" onClick={requestNotifications} disabled={notifStatus === "granted"}>
-            {notifStatus === "granted" ? "NOTIFS ON" : "ENABLE NOTIFS"}
+            {notifStatus === "granted" ? "NOTIFS OK" : "ENABLE NOTIFS"}
           </button>
           <button className="pxBtn ghost" onClick={resetAll}>
             RESET

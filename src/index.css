@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap");
 
 :root{
+  /* --- LIGHT MODE DEFAULT --- */
   --ink:#1f1f1f;
   --paper: rgba(255,255,255,0.92);
 
@@ -14,6 +15,30 @@
   --mint:#c8f7dc;
   --sky:#cfe7ff;
   --cream:#fff3d6;
+
+  --bg-overlay: rgba(0,0,0,0); /* No overlay in light mode */
+  --cloud-opacity: 0.55;
+}
+
+/* --- NIGHT MODE OVERRIDES --- */
+body.dark {
+  --ink: #e6e6e6;
+  --paper: rgba(40, 36, 50, 0.95); /* Dark Purple Grey */
+
+  --win: rgba(45, 42, 60, 0.92);
+  --tile: rgba(255,255,255,0.05);
+
+  --border: #15151b;
+  --shadow: #000000;
+
+  --pink: #6d4c5e; /* Muted Dark Pink */
+  --mint: #385648; /* Muted Dark Green */
+  --sky: #3b4e63;  /* Muted Dark Blue */
+  --cream: #4a4638; /* Muted Dark Yellow */
+
+  --bg-overlay: rgba(20, 20, 35, 0.85); /* Darkens the BG image */
+  --cloud-opacity: 0.15; /* Dim the white clouds significantly */
+  background-color: #121212;
 }
 
 *{ box-sizing:border-box; }
@@ -21,9 +46,10 @@ html,body{ height:100%; margin:0; }
 body{
   font-family:"VT323", system-ui, -apple-system, Segoe UI, Roboto, Arial;
   color:var(--ink);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* ✅ BACKGROUND (your pixel_bg.png) */
+/* ✅ BACKGROUND */
 .bg{
   min-height:100vh;
   padding: 14px 14px 40px;
@@ -32,10 +58,26 @@ body{
   background-position:center;
   background-attachment: fixed;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden; /* Prevent horizontal scroll on mobile */
 }
 
-/* ✅ MOVING CLOUD LAYERS (pure CSS, no extra images needed) */
+/* Dark mode tint for background image */
+body.dark .bg::before {
+   /* We use a separate pseudo element for the tint in dark mode if needed, 
+      but here we just reuse the cloud container or add a tint on .bg directly via linear-gradient trick */
+   background: linear-gradient(rgba(20,20,35,0.85), rgba(20,20,35,0.85)), url("./assets/pixel_bg.png");
+   background-size: cover;
+   background-attachment: fixed;
+}
+/* Re-applying background purely for clean switching logic if you use the image tag. 
+   Actually, the easiest way to dim a bg image without extra divs is using box-shadow inset or bg-color blend.
+   Let's use a simple overlay on body.dark .bg */
+
+body.dark .bg {
+  box-shadow: inset 0 0 0 100vh var(--bg-overlay);
+}
+
+/* ✅ MOVING CLOUD LAYERS */
 .bg::before,
 .bg::after{
   content:"";
@@ -44,9 +86,10 @@ body{
   right: -40%;
   height: 220px;
   background-repeat: repeat-x;
-  opacity: 0.55;
+  opacity: var(--cloud-opacity); /* Use variable for night mode */
   pointer-events:none;
   image-rendering: pixelated;
+  transition: opacity 0.5s ease;
 }
 
 /* Top cloud layer */
@@ -61,12 +104,13 @@ body{
   background-size: 220px 120px;
   animation: cloudsDrift 28s linear infinite;
   filter: blur(0.2px);
+  z-index: 0;
 }
 
 /* Mid cloud layer */
 .bg::after{
   top: 120px;
-  opacity: 0.35;
+  opacity: calc(var(--cloud-opacity) * 0.6);
   background-image:
     radial-gradient(circle at 30px 30px, rgba(255,255,255,0.75) 0 14px, transparent 15px),
     radial-gradient(circle at 55px 26px, rgba(255,255,255,0.75) 0 16px, transparent 17px),
@@ -75,6 +119,7 @@ body{
     radial-gradient(circle at 140px 36px, rgba(255,255,255,0.75) 0 14px, transparent 15px);
   background-size: 180px 90px;
   animation: cloudsDrift 45s linear infinite reverse;
+  z-index: 0;
 }
 
 @keyframes cloudsDrift{
@@ -93,12 +138,17 @@ body{
   margin: 0 auto 14px;
   max-width: 1100px;
 }
+@media (max-width: 600px){
+  .hud{ flex-direction: column; align-items: stretch; }
+  .hudRight { justify-content: flex-start; }
+}
 
 .logo{
   font-family:"Press Start 2P";
   font-size: 18px;
   letter-spacing: 1px;
   text-shadow: 2px 2px 0 rgba(0,0,0,0.12);
+  /* In dark mode, white text shadow looks better or keep dark shadow for depth */
 }
 
 .hudMeta{
@@ -117,6 +167,7 @@ body{
   background: var(--paper);
   box-shadow: 4px 4px 0 rgba(0,0,0,0.15);
   font-size: 16px;
+  color: var(--ink);
 }
 .chip.small{ padding: 4px 6px; font-size: 14px; }
 
@@ -133,14 +184,20 @@ body{
   padding: 10px 10px;
   border: 4px solid var(--border);
   background: #fff;
+  color: #1f1f1f; /* Buttons stay light usually for contrast, or adapt */
   cursor:pointer;
   box-shadow: 6px 6px 0 var(--shadow);
   transform: translate(0,0);
 }
+body.dark .pxBtn {
+  background: #cfcfcf; /* Slightly dimmed white for buttons in dark mode */
+}
 .pxBtn:hover{ transform: translate(-1px,-1px); box-shadow: 7px 7px 0 var(--shadow); }
 .pxBtn:active{ transform: translate(2px,2px); box-shadow: 4px 4px 0 var(--shadow); }
 .pxBtn:disabled{ opacity:0.55; cursor:not-allowed; }
+
 .pxBtn.ghost{ background: rgba(255,255,255,0.70); }
+body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
 
 /* Layout */
 .layout{
@@ -164,8 +221,9 @@ body{
   border: 5px solid var(--border);
   box-shadow:
     8px 8px 0 var(--shadow),
-    0 0 0 4px rgba(255,255,255,0.35) inset;
+    0 0 0 4px rgba(255,255,255,0.05) inset;
   position: relative;
+  color: var(--ink);
 }
 
 .pxWin::after{
@@ -200,15 +258,17 @@ body{
   place-items:center;
   border: 4px solid var(--border);
   background: #fff;
+  color: #1f1f1f;
   font-family:"Press Start 2P";
   font-size: 12px;
 }
 .pxTitle{
   font-family:"Press Start 2P";
   font-size: 12px;
+  color: #1f1f1f; /* Keep title dark even in dark mode for contrast on pastel bar */
 }
 .pxBarRight{ display:flex; gap: 8px; align-items:center; }
-.miniHint{ font-size: 14px; opacity: 0.85; }
+.miniHint{ font-size: 14px; opacity: 0.85; color: #1f1f1f; }
 
 .pxBody{
   position: relative;
@@ -216,21 +276,28 @@ body{
   padding: 12px;
 }
 
-/* Modal (unchanged) */
+/* Modal */
 .backdrop{
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.45);
-  display:grid;
-  place-items:center;
+  display:flex; /* Changed from grid to flex for better overflow handling */
+  align-items: center;
+  justify-content: center;
   padding: 14px;
   z-index: 999;
 }
+
+/* ✅ SCROLLABLE MODAL FIX */
 .modalWin{
   width: min(980px, 100%);
+  max-height: 85vh; /* Don't be taller than screen */
+  overflow-y: auto; /* Scroll if content is too big */
+  display: flex;
+  flex-direction: column;
 }
 
-/* ✅ Keep BOX sizes like before */
+/* ✅ Keep BOX sizes */
 .charScreen{
   display:flex;
   flex-direction: column;
@@ -239,8 +306,8 @@ body{
 }
 
 .charFrame{
-  width: 160px;     /* ✅ back to original */
-  height: 160px;    /* ✅ back to original */
+  width: 160px;
+  height: 160px;
   border: 5px solid var(--border);
   background:
     linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.2)),
@@ -249,29 +316,31 @@ body{
   display:grid;
   place-items:center;
 }
+body.dark .charFrame {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0 8px, rgba(0,0,0,0) 8px 16px);
+}
 
-/* ✅ Keep big frame size like before */
 .charFrame.big{
-  width: 220px;    /* ✅ original big */
-  height: 220px;   /* ✅ original big */
+  width: 220px;
+  height: 220px;
 }
 
-/* ✅ NOW: MAKE ONLY THE MASCOT BIGGER (not the frame) */
+/* Mascot */
 .sprite{
-  width: 140px;    /* was 120 */
-  height: 140px;   /* was 120 */
+  width: 140px;
+  height: 140px;
   object-fit: contain;
   image-rendering: pixelated;
-  transform: scale(1.08); /* ✅ makes it pop inside frame */
+  transform: scale(1.08);
 }
-
-/* ✅ Toofi screen mascot BIGGER */
 .sprite.big{
-  width: 222px;    /* was 160 */
-  height: 222px;   /* was 160 */
+  width: 222px;
+  height: 222px;
   object-fit: contain;
   image-rendering: pixelated;
-  transform: scale(1.12); /* ✅ BIGGER character */
+  transform: scale(1.12);
 }
 
 .charName{
@@ -280,10 +349,11 @@ body{
   padding: 6px 8px;
   border: 4px solid var(--border);
   background: #fff;
+  color: #1f1f1f;
   box-shadow: 4px 4px 0 var(--shadow);
 }
 
-/* Layout columns (keep like before) */
+/* Layout columns */
 .introGrid{
   display:grid;
   grid-template-columns: 260px 1fr;
@@ -291,7 +361,8 @@ body{
   align-items:start;
 }
 @media (max-width: 900px){
-  .introGrid{ grid-template-columns: 1fr; }
+  .introGrid{ grid-template-columns: 1fr; justify-items: center; } /* Center char on mobile */
+  .introGrid > div { width: 100%; } /* Text takes full width */
 }
 
 .leftGrid{
@@ -300,10 +371,11 @@ body{
   gap: 14px;
 }
 @media (max-width: 980px){
-  .leftGrid{ grid-template-columns: 1fr; }
+  .leftGrid{ grid-template-columns: 1fr; justify-items: center; }
+  .leftGrid > div { width: 100%; }
 }
 
-/* inputs + dialog etc */
+/* inputs + dialog */
 .fieldRow{
   display:grid;
   grid-template-columns: 1fr 1fr;
@@ -317,6 +389,7 @@ body{
   font-family:"Press Start 2P";
   font-size: 11px;
   margin-bottom: 6px;
+  color: var(--ink);
 }
 
 .pxInput{
@@ -324,11 +397,15 @@ body{
   padding: 10px 10px;
   border: 4px solid var(--border);
   background: #fff;
+  color: #1f1f1f;
   font-family:"VT323";
   font-size: 18px;
   outline: none;
   box-shadow: 4px 4px 0 var(--shadow);
   border-radius: 0;
+}
+body.dark .pxInput {
+  background: #e0e0e0; /* Input stays light-ish for readability, but slightly dim */
 }
 
 .dialog{
@@ -337,17 +414,22 @@ body{
   background: #fff;
   box-shadow: 6px 6px 0 var(--shadow);
 }
+body.dark .dialog { background: var(--paper); }
+
 .dialogName{
   font-family:"Press Start 2P";
   font-size: 11px;
   padding: 8px 10px;
   border-bottom: 5px solid var(--border);
   background: var(--cream);
+  color: #1f1f1f; /* Keep name text dark for contrast on cream */
 }
+
 .dialogText{
   padding: 10px 10px;
   font-size: 18px;
   line-height: 1.25;
+  color: var(--ink);
 }
 .tiny{
   margin-top: 8px;
@@ -363,6 +445,7 @@ body{
   font-family:"Press Start 2P";
   font-size: 10px;
   margin-left: 6px;
+  color: #1f1f1f;
 }
 
 .questList{
@@ -376,9 +459,20 @@ body{
   box-shadow: 6px 6px 0 var(--shadow);
   padding: 10px;
   font-size: 18px;
+  color: #1f1f1f;
 }
+body.dark .quest {
+  background: var(--paper);
+  color: var(--ink);
+}
+
 .quest.warn{
   background: rgba(255,243,214,0.92);
+  color: #1f1f1f;
+}
+body.dark .quest.warn {
+  background: #6e644a; /* Darker yellow/brown warning */
+  color: #fff;
 }
 
 .btnRow{
@@ -415,7 +509,13 @@ body{
   justify-content: space-between;
   gap: 10px;
   align-items:center;
+  color: #1f1f1f;
 }
+body.dark .questRow {
+  background: var(--paper);
+  color: var(--ink);
+}
+
 .qTitle{
   font-family:"Press Start 2P";
   font-size: 11px;
@@ -425,6 +525,19 @@ body{
   opacity: 0.9;
   margin-top: 6px;
 }
+
+/* Status Colors - slight transparency for overlay effect */
 .questRow.now{ background: rgba(255,214,232,0.90); }
+body.dark .questRow.now { background: #6d4c5e; color: #fff; }
+
 .questRow.soon{ background: rgba(255,243,214,0.90); }
+body.dark .questRow.soon { background: #6e644a; color: #fff; }
+
 .questRow.ok{ background: rgba(200,247,220,0.80); }
+body.dark .questRow.ok { background: #385648; color: #fff; }
+
+/* Mobile tweaks for Quest Row */
+@media (max-width: 500px) {
+  .questRow { flex-direction: column; align-items: flex-start; }
+  .questRow button { width: 100%; margin-top: 8px; }
+}
