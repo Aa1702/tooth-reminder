@@ -16,28 +16,14 @@
   --sky:#cfe7ff;
   --cream:#fff3d6;
 
-  --bg-overlay: rgba(0,0,0,0);
+  --bg-overlay: rgba(0,0,0,0); /* No overlay in light mode */
   --cloud-opacity: 0.55;
-
-  /* ✅ SIZING TOKENS (we’ll shrink these on mobile) */
-  --bw-win: 5px;        /* window border */
-  --bw-bar: 5px;        /* titlebar bottom border */
-  --bw-input: 4px;      /* input border */
-  --bw-box: 5px;        /* dialog/quest borders */
-  --bw-chip: 3px;       /* chip border */
-  --bw-btn: 4px;        /* button border */
-
-  --shadow-win: 8px;
-  --shadow-md: 6px;
-  --shadow-sm: 4px;
-
-  --pad-bg: 14px;
 }
 
 /* --- NIGHT MODE OVERRIDES --- */
 body.dark {
   --ink: #e6e6e6;
-  --paper: rgba(40, 36, 50, 0.95);
+  --paper: rgba(40, 36, 50, 0.95); /* Dark Purple Grey */
 
   --win: rgba(45, 42, 60, 0.92);
   --tile: rgba(255,255,255,0.05);
@@ -45,48 +31,14 @@ body.dark {
   --border: #15151b;
   --shadow: #000000;
 
-  --pink: #6d4c5e;
-  --mint: #385648;
-  --sky: #3b4e63;
-  --cream: #4a4638;
+  --pink: #6d4c5e; /* Muted Dark Pink */
+  --mint: #385648; /* Muted Dark Green */
+  --sky: #3b4e63;  /* Muted Dark Blue */
+  --cream: #4a4638; /* Muted Dark Yellow */
 
-  --bg-overlay: rgba(20, 20, 35, 0.85);
-  --cloud-opacity: 0.15;
+  --bg-overlay: rgba(20, 20, 35, 0.85); /* Darkens the BG image */
+  --cloud-opacity: 0.15; /* Dim the white clouds significantly */
   background-color: #121212;
-}
-
-/* ✅ MOBILE BOX SHRINK (THIS FIXES OUT-OF-BOUNDARY) */
-@media (max-width: 520px){
-  :root{
-    --bw-win: 4px;
-    --bw-bar: 4px;
-    --bw-input: 3px;
-    --bw-box: 4px;
-    --bw-chip: 3px;
-    --bw-btn: 3px;
-
-    --shadow-win: 6px;
-    --shadow-md: 5px;
-    --shadow-sm: 3px;
-
-    --pad-bg: 10px;
-  }
-}
-@media (max-width: 380px){
-  :root{
-    --bw-win: 3px;
-    --bw-bar: 3px;
-    --bw-input: 3px;
-    --bw-box: 3px;
-    --bw-chip: 2px;
-    --bw-btn: 3px;
-
-    --shadow-win: 5px;
-    --shadow-md: 4px;
-    --shadow-sm: 2px;
-
-    --pad-bg: 8px;
-  }
 }
 
 *{ box-sizing:border-box; }
@@ -95,27 +47,28 @@ body{
   font-family:"VT323", system-ui, -apple-system, Segoe UI, Roboto, Arial;
   color:var(--ink);
   transition: background-color 0.3s ease, color 0.3s ease;
-  overflow-x: hidden; /* ✅ important for mobile */
 }
 
 /* ✅ BACKGROUND */
 .bg{
   min-height:100vh;
-  padding: var(--pad-bg) var(--pad-bg) 40px;
+  padding: 14px 14px 40px;
   background: url("./assets/pixel_bg.png");
   background-size: cover;
   background-position:center;
   background-attachment: fixed;
   position: relative;
-  overflow-x: hidden;
+  overflow-x: hidden; /* Prevent horizontal scroll on mobile */
 }
 
-/* Dark mode tint */
+/* Dark mode tint for background image */
 body.dark .bg::before {
-   background: linear-gradient(rgba(20,20,35,0.85), rgba(20,20,35,0.85)), url("./assets/pixel_bg.png");
-   background-size: cover;
-   background-attachment: fixed;
+  background: linear-gradient(rgba(20,20,35,0.85), rgba(20,20,35,0.85)), url("./assets/pixel_bg.png");
+  background-size: cover;
+  background-attachment: fixed;
 }
+
+/* Overlay tint (simple + reliable) */
 body.dark .bg {
   box-shadow: inset 0 0 0 100vh var(--bg-overlay);
 }
@@ -129,7 +82,7 @@ body.dark .bg {
   right: -40%;
   height: 220px;
   background-repeat: repeat-x;
-  opacity: var(--cloud-opacity);
+  opacity: var(--cloud-opacity); /* Use variable for night mode */
   pointer-events:none;
   image-rendering: pixelated;
   transition: opacity 0.5s ease;
@@ -205,9 +158,9 @@ body.dark .bg {
   align-items:center;
   gap: 6px;
   padding: 6px 8px;
-  border: var(--bw-chip) solid var(--border);
+  border: 3px solid var(--border);
   background: var(--paper);
-  box-shadow: var(--shadow-sm) var(--shadow-sm) 0 rgba(0,0,0,0.15);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.15);
   font-size: 16px;
   color: var(--ink);
 }
@@ -224,18 +177,18 @@ body.dark .bg {
   font-family:"Press Start 2P";
   font-size: 11px;
   padding: 10px 10px;
-  border: var(--bw-btn) solid var(--border);
+  border: 4px solid var(--border);
   background: #fff;
   color: #1f1f1f;
   cursor:pointer;
-  box-shadow: var(--shadow-md) var(--shadow-md) 0 var(--shadow);
+  box-shadow: 6px 6px 0 var(--shadow);
   transform: translate(0,0);
 }
 body.dark .pxBtn {
   background: #cfcfcf;
 }
-.pxBtn:hover{ transform: translate(-1px,-1px); box-shadow: calc(var(--shadow-md) + 1px) calc(var(--shadow-md) + 1px) 0 var(--shadow); }
-.pxBtn:active{ transform: translate(2px,2px); box-shadow: var(--shadow-sm) var(--shadow-sm) 0 var(--shadow); }
+.pxBtn:hover{ transform: translate(-1px,-1px); box-shadow: 7px 7px 0 var(--shadow); }
+.pxBtn:active{ transform: translate(2px,2px); box-shadow: 4px 4px 0 var(--shadow); }
 .pxBtn:disabled{ opacity:0.55; cursor:not-allowed; }
 
 .pxBtn.ghost{ background: rgba(255,255,255,0.70); }
@@ -260,13 +213,14 @@ body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
 /* Pixel Window */
 .pxWin{
   background: var(--win);
-  border: var(--bw-win) solid var(--border);
+  border: 5px solid var(--border);
   box-shadow:
-    var(--shadow-win) var(--shadow-win) 0 var(--shadow),
+    8px 8px 0 var(--shadow),
     0 0 0 4px rgba(255,255,255,0.05) inset;
   position: relative;
   color: var(--ink);
   max-width: 100%;
+  overflow-x: hidden; /* ✅ keeps everything inside on mobile */
 }
 
 .pxWin::after{
@@ -286,7 +240,7 @@ body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
   justify-content: space-between;
   align-items:center;
   padding: 10px 10px;
-  border-bottom: var(--bw-bar) solid var(--border);
+  border-bottom: 5px solid var(--border);
   background: linear-gradient(90deg, var(--pink), var(--mint), var(--sky));
 }
 .pxBarLeft{
@@ -299,7 +253,7 @@ body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
   height: 24px;
   display:grid;
   place-items:center;
-  border: var(--bw-btn) solid var(--border);
+  border: 4px solid var(--border);
   background: #fff;
   color: #1f1f1f;
   font-family:"Press Start 2P";
@@ -317,9 +271,7 @@ body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
   position: relative;
   z-index: 1;
   padding: 12px;
-}
-@media (max-width: 520px){
-  .pxBody{ padding: 10px; }
+  overflow-x: hidden; /* ✅ prevents iOS weird overflow */
 }
 
 /* Modal */
@@ -334,6 +286,7 @@ body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
   z-index: 999;
 }
 
+/* ✅ SCROLLABLE MODAL FIX */
 .modalWin{
   width: min(980px, 100%);
   max-height: 85vh;
@@ -342,7 +295,7 @@ body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
   flex-direction: column;
 }
 
-/* Keep BOX sizes */
+/* ✅ Keep BOX sizes */
 .charScreen{
   display:flex;
   flex-direction: column;
@@ -353,11 +306,11 @@ body.dark .pxBtn.ghost { background: rgba(200,200,200, 0.7); }
 .charFrame{
   width: 160px;
   height: 160px;
-  border: var(--bw-box) solid var(--border);
+  border: 5px solid var(--border);
   background:
     linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.2)),
     repeating-linear-gradient(90deg, rgba(0,0,0,0.06) 0 8px, rgba(0,0,0,0) 8px 16px);
-  box-shadow: var(--shadow-md) var(--shadow-md) 0 var(--shadow);
+  box-shadow: 6px 6px 0 var(--shadow);
   display:grid;
   place-items:center;
 }
@@ -392,10 +345,10 @@ body.dark .charFrame {
   font-family:"Press Start 2P";
   font-size: 12px;
   padding: 6px 8px;
-  border: var(--bw-btn) solid var(--border);
+  border: 4px solid var(--border);
   background: #fff;
   color: #1f1f1f;
-  box-shadow: var(--shadow-sm) var(--shadow-sm) 0 var(--shadow);
+  box-shadow: 4px 4px 0 var(--shadow);
 }
 
 /* Layout columns */
@@ -439,31 +392,30 @@ body.dark .charFrame {
 
 .pxInput{
   width: 100%;
+  max-width: 100%;
   padding: 10px 10px;
-  border: var(--bw-input) solid var(--border);
+  border: 4px solid var(--border);
   background: #fff;
   color: #1f1f1f;
   font-family:"VT323";
   font-size: 18px;
   outline: none;
-  box-shadow: var(--shadow-sm) var(--shadow-sm) 0 var(--shadow);
+  box-shadow: 4px 4px 0 var(--shadow);
   border-radius: 0;
+
+  /* ✅ iOS inputs can get weird. This helps. */
+  -webkit-appearance: none;
+  appearance: none;
 }
 body.dark .pxInput {
   background: #e0e0e0;
 }
-@media (max-width: 520px){
-  .pxInput{ padding: 9px 9px; font-size: 17px; }
-}
-@media (max-width: 380px){
-  .pxInput{ padding: 8px 8px; font-size: 16px; }
-}
 
 .dialog{
   margin-top: 10px;
-  border: var(--bw-box) solid var(--border);
+  border: 5px solid var(--border);
   background: #fff;
-  box-shadow: var(--shadow-md) var(--shadow-md) 0 var(--shadow);
+  box-shadow: 6px 6px 0 var(--shadow);
 }
 body.dark .dialog { background: var(--paper); }
 
@@ -471,7 +423,7 @@ body.dark .dialog { background: var(--paper); }
   font-family:"Press Start 2P";
   font-size: 11px;
   padding: 8px 10px;
-  border-bottom: var(--bw-box) solid var(--border);
+  border-bottom: 5px solid var(--border);
   background: var(--cream);
   color: #1f1f1f;
 }
@@ -491,7 +443,7 @@ body.dark .dialog { background: var(--paper); }
 .tag{
   display:inline-block;
   padding: 2px 6px;
-  border: var(--bw-chip) solid var(--border);
+  border: 3px solid var(--border);
   background: rgba(255,214,232,0.7);
   font-family:"Press Start 2P";
   font-size: 10px;
@@ -505,9 +457,9 @@ body.dark .dialog { background: var(--paper); }
   gap: 10px;
 }
 .quest{
-  border: var(--bw-box) solid var(--border);
+  border: 5px solid var(--border);
   background: rgba(255,255,255,0.92);
-  box-shadow: var(--shadow-md) var(--shadow-md) 0 var(--shadow);
+  box-shadow: 6px 6px 0 var(--shadow);
   padding: 10px;
   font-size: 18px;
   color: #1f1f1f;
@@ -552,9 +504,9 @@ body.dark .quest.warn {
   gap: 10px;
 }
 .questRow{
-  border: var(--bw-box) solid var(--border);
+  border: 5px solid var(--border);
   background: rgba(255,255,255,0.92);
-  box-shadow: var(--shadow-md) var(--shadow-md) 0 var(--shadow);
+  box-shadow: 6px 6px 0 var(--shadow);
   padding: 10px;
   display:flex;
   justify-content: space-between;
@@ -591,4 +543,68 @@ body.dark .questRow.ok { background: #385648; color: #fff; }
 @media (max-width: 500px) {
   .questRow { flex-direction: column; align-items: flex-start; }
   .questRow button { width: 100%; margin-top: 8px; }
+}
+
+/* ✅✅ THE IMPORTANT PART: MOBILE BOX SIZE FIXES (keeps your style, just scaled) */
+@media (max-width: 520px){
+  .bg{ padding: 10px 10px 28px; }
+
+  .logo{ font-size: 16px; }
+
+  .chip{ font-size: 14px; padding: 5px 7px; border-width: 3px; box-shadow: 3px 3px 0 rgba(0,0,0,0.15); }
+  .chip.small{ font-size: 12px; }
+
+  .pxBtn{
+    font-size: 10px;
+    padding: 9px 9px;
+    border-width: 3px;
+    box-shadow: 4px 4px 0 var(--shadow);
+  }
+
+  .pxWin{
+    border-width: 4px;
+    box-shadow: 6px 6px 0 var(--shadow);
+  }
+
+  .pxBar{
+    padding: 9px 9px;
+    border-bottom-width: 4px;
+  }
+  .pxIcon{
+    width: 22px;
+    height: 22px;
+    border-width: 3px;
+    font-size: 11px;
+  }
+  .pxTitle{
+    font-size: 11px;
+  }
+
+  .pxBody{ padding: 10px; }
+
+  .pxInput{
+    font-size: 16px;
+    padding: 8px 8px;
+    border-width: 3px;
+    box-shadow: 3px 3px 0 var(--shadow); /* ✅ reduces “out of bounds” look */
+  }
+
+  .dialog{
+    border-width: 4px;
+    box-shadow: 4px 4px 0 var(--shadow);
+  }
+
+  .quest{
+    border-width: 4px;
+    box-shadow: 4px 4px 0 var(--shadow);
+  }
+
+  .questRow{
+    border-width: 4px;
+    box-shadow: 4px 4px 0 var(--shadow);
+  }
+
+  /* Mascot fits nicer on small screens */
+  .charFrame.big{ width: 200px; height: 200px; border-width: 4px; box-shadow: 4px 4px 0 var(--shadow); }
+  .sprite.big{ width: 200px; height: 200px; transform: scale(1.1); }
 }

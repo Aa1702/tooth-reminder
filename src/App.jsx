@@ -40,14 +40,11 @@ const prettyIn = (mins) => {
 };
 
 function safeNotify(title, body) {
-  if (!("Notification" in window)) return false;
-  if (Notification.permission !== "granted") return false;
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
   try {
     new Notification(title, { body });
-    return true;
-  } catch {
-    return false;
-  }
+  } catch {}
 }
 
 const defaultPlan = {
@@ -109,47 +106,63 @@ export default function App() {
     localStorage.setItem(LS_KEY, JSON.stringify(plan));
   }, [plan]);
 
+  const isIOS = useMemo(() => {
+    if (typeof navigator === "undefined") return false;
+    return /iPad|iPhone|iPod/.test(navigator.userAgent);
+  }, []);
+
+  const isStandalone = useMemo(() => {
+    // iOS Safari "Add to Home Screen" standalone mode
+    return (
+      (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+      (typeof navigator !== "undefined" && navigator.standalone === true)
+    );
+  }, [clock]);
+
+  // ✅ Notification status (more helpful)
   const notifStatus = useMemo(() => {
     if (!("Notification" in window)) return "unsupported";
     return Notification.permission;
   }, [clock]);
 
+  const notifLabel = useMemo(() => {
+    if (notifStatus === "granted") return "ON";
+    if (notifStatus === "denied") return "DENIED";
+    if (notifStatus === "default") return "NOPE";
+    return "UNSUPPORTED";
+  }, [notifStatus]);
+
   function toggleDarkMode() {
-    setPlan(p => ({ ...p, darkMode: !p.darkMode }));
+    setPlan((p) => ({ ...p, darkMode: !p.darkMode }));
   }
 
-  // ✅ FIX: make button ALWAYS respond with a toast message (no silent fail)
-  async function requestNotifications() {
-    // Must be called from a click (you already do)
+  function requestNotifications() {
+    // ✅ Make button always "do something"
     if (!("Notification" in window)) {
-      setToast("NOTIFS: UNSUPPORTED ❌");
-      setTimeout(() => setToast(""), 1800);
-      return;
-    }
-
-    // If user already denied, Safari won't re-prompt
-    if (Notification.permission === "denied") {
-      setToast("NOTIFS: DENIED ⚠️ (enable in Safari settings)");
-      setTimeout(() => setToast(""), 2500);
-      return;
-    }
-
-    try {
-      const perm = await Notification.requestPermission();
-      if (perm === "granted") {
-        setToast("NOTIFS: ON ✅");
-        // quick test notification (only works where allowed)
-        safeNotify(`${plan.characterName} 🦷`, "Notifications enabled!");
-      } else if (perm === "denied") {
-        setToast("NOTIFS: DENIED ⚠️");
+      // iOS guidance
+      if (isIOS && !isStandalone) {
+        setToast("iPhone: Add to Home Screen first 📲");
       } else {
-        setToast("NOTIFS: LATER ⏳");
+        setToast("Notifs not supported on this device 😭");
       }
-      setTimeout(() => setToast(""), 2000);
-    } catch {
-      setToast("NOTIFS: FAILED ❌");
       setTimeout(() => setToast(""), 1800);
+      return;
     }
+
+    // iOS sometimes needs HTTPS + user gesture (this click is a gesture)
+    Notification.requestPermission().then((perm) => {
+      if (perm === "granted") {
+        setToast("NOTIFS: OK ✅");
+      } else if (perm === "denied") {
+        setToast("NOTIFS: DENIED 🚫 (check Settings)");
+      } else {
+        setToast("NOTIFS: LATER 🙃");
+      }
+      setTimeout(() => setToast(""), 1500);
+    }).catch(() => {
+      setToast("NOTIFS: failed 😵");
+      setTimeout(() => setToast(""), 1500);
+    });
   }
 
   function bumpStreak() {
@@ -274,16 +287,9 @@ export default function App() {
     const stamp = `${todayISO()}_${clock}`;
     if (plan.lastNotifiedAtMinute === stamp) return;
 
-    const ok = safeNotify(`${plan.characterName} 🦷`, `${due.title} TIME! TAP DONE ✅`);
-    // even if notify fails, we still stamp to avoid spam loops
+    safeNotify(`${plan.characterName} 🦷`, `${due.title} TIME! TAP DONE ✅`);
     setPlan((p) => ({ ...p, lastNotifiedAtMinute: stamp }));
-    if (!ok && Notification.permission !== "granted") {
-      // optional: tiny nudge only if user hasn’t enabled
-      // (no UI changes, just a toast)
-      setToast("Reminder ready (turn on notifs 🔔)");
-      setTimeout(() => setToast(""), 1600);
-    }
-  }, [clock, schedule]);
+  }, [clock, schedule, plan.lastNotifiedAtMinute, plan.characterName]);
 
   function badge(mins) {
     if (mins === 0) return "NOW";
@@ -337,10 +343,9 @@ export default function App() {
           <div className="hudMeta">
             <span className="chip">🕒 {clock}</span>
             <span className="chip">🔥 STREAK {plan.streak}</span>
-            <span className="chip">🔔 {notifStatus === "granted" ? "ON" : notifStatus === "unsupported" ? "NOPE" : "OFF"}</span>
+            <span className="chip">🔔 {notifLabel}</span>
           </div>
         </div>
-
         <div className="hudRight">
           <button className="pxBtn" onClick={toggleDarkMode}>
             {plan.darkMode ? "☀ DAY" : "🌙 NIGHT"}
@@ -350,6 +355,11 @@ export default function App() {
             className="pxBtn"
             onClick={requestNotifications}
             disabled={notifStatus === "granted"}
+            title={
+              notifStatus === "unsupported" && isIOS && !isStandalone
+                ? "Install to Home Screen first"
+                : ""
+            }
           >
             {notifStatus === "granted" ? "NOTIFS OK" : "ENABLE NOTIFS"}
           </button>
@@ -426,6 +436,7 @@ export default function App() {
 
       {/* MAIN LAYOUT */}
       <main className="layout">
+        {/* LEFT: Character + chat */}
         <PixelWindow
           title="TOOFI SCREEN"
           icon="☺"
@@ -449,7 +460,6 @@ export default function App() {
                     onChange={(e) => setPlan((p) => ({ ...p, friendName: e.target.value }))}
                   />
                 </div>
-
                 <div className="field">
                   <div className="label">MASCOT NAME</div>
                   <input
@@ -480,6 +490,7 @@ export default function App() {
           </div>
         </PixelWindow>
 
+        {/* RIGHT: Schedule controls */}
         <PixelWindow title="SCHEDULE SETTINGS" icon="⚙" right={<span className="miniHint">EDIT TIMES</span>}>
           <div className="settingsGrid">
             <div className="setting">
@@ -498,7 +509,6 @@ export default function App() {
                 }
               />
             </div>
-
             <div className="setting">
               <div className="label">Start</div>
               <input
@@ -527,7 +537,6 @@ export default function App() {
                 }
               />
             </div>
-
             <div className="setting">
               <div className="label">Start</div>
               <input
@@ -555,7 +564,6 @@ export default function App() {
                 }
               />
             </div>
-
             <div className="setting">
               <div className="label">Salt rinse 2</div>
               <input
@@ -620,10 +628,11 @@ export default function App() {
           </div>
 
           <div className="tiny" style={{ marginTop: 10 }}>
-            iPhone tip: best as “Add to Home Screen” (PWA). Notifications depend on browser settings.
+            iPhone tip: best as “Add to Home Screen” (PWA). Notifications depend on iOS + browser support.
           </div>
         </PixelWindow>
 
+        {/* Bottom: Quest log */}
         <PixelWindow title="QUEST LOG: NEXT UP" icon="➤" className="span2">
           <div className="questLog">
             {schedule.slice(0, 10).map((it) => {
